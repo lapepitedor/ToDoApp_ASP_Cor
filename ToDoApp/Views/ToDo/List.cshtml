@@ -1,0 +1,33 @@
+﻿@model IEnumerable<ToDo>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "ToDo - List";
+}
+
+<a class="btn btn-primary" href="/ToDo/New" role="button">Add Item</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Title</th>
+            <th scope="col">Completion</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int index = 1;
+        }
+        @foreach (var obj in @Model)
+        {
+            <tr>
+                <td>@index</td>
+                <td>@obj.Title</td>
+                <td>@obj.Completion</td>
+                <td><a href="/ToDo/edit/@obj.ID">Edit</a> | <a href="/ToDo/delete/@obj.ID">Delete</a></td>
+            </tr>
+            index++;
+        }
+    </tbody>
+</table>

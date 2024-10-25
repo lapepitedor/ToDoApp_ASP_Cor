@@ -15,21 +15,24 @@ namespace ToDoApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IToDoRepository, ToDoMemoryRepository>();
-            services.AddControllers().AddJsonOptions(options => {
+            services.AddControllers().AddJsonOptions(options =>
+            {
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
-            
-            services.AddApiVersioning(options => {
-                 options.DefaultApiVersion = new ApiVersion(2);
-                 options.ReportApiVersions = true;
-                 options.AssumeDefaultVersionWhenUnspecified = true;
-                 options.ApiVersionReader = new UrlSegmentApiVersionReader();
-                }).AddApiExplorer(options => {
-                     options.GroupNameFormat = "'v'V";
-                     options.SubstituteApiVersionInUrl = true;
-                     });
+
+            services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(2);
+                options.ReportApiVersions = true;
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            }).AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'V";
+                options.SubstituteApiVersionInUrl = true;
+            });
             services.AddMvc();
             services.AddProblemDetails();
             services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -46,7 +49,7 @@ namespace ToDoApp
         {
             app.UseExceptionHandler(); //Exceptions
 
-          
+
 
             if (env.IsDevelopment())
             {
@@ -63,10 +66,13 @@ namespace ToDoApp
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers(); // we will use attribute-based routing
-            });
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=ToDo}/{action=List}/{id?}" // ToDoController by default
+                    ); // we will use attribute-based routing
+        });
 
             
         }
-    }
+}
 }
