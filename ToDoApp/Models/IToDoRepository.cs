@@ -2,8 +2,8 @@
 {
     public interface IToDoRepository
     {
-       // ToDoListResult GetAll(ToDoFilter filter);
-        IEnumerable<ToDo> GetAll();
+        
+        IEnumerable<ToDo> GetAll(ToDoFilter filter);
         ToDo GetSingle(Guid id);
         ToDo Add(ToDo entity);
         void Delete(Guid id);

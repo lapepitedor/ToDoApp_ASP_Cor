@@ -1,4 +1,6 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using ToDoApp.Misc;
@@ -14,65 +16,56 @@ namespace ToDoApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<MailSettings>(options => config.GetSection("MailSettings").Bind(options));
+            services.Configure<GeneralSettings>(options => config.GetSection("GeneralSettings").Bind(options));
             services.AddSingleton<IToDoRepository, ToDoMemoryRepository>();
-            services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            services.AddSingleton<IUserRepository, UserMemoryRepository>();
+            services.AddSingleton<PasswordHelper>();
+            services.AddSingleton<EmailQueue>();
+            services.AddSingleton<EmailService>();
+            services.AddHostedService<BackgroundEmailSender>();
 
-            services.AddApiVersioning(options =>
-            {
-                options.DefaultApiVersion = new ApiVersion(2);
-                options.ReportApiVersions = true;
-                options.AssumeDefaultVersionWhenUnspecified = true;
-                options.ApiVersionReader = new UrlSegmentApiVersionReader();
-            }).AddApiExplorer(options =>
-            {
-                options.GroupNameFormat = "'v'V";
-                options.SubstituteApiVersionInUrl = true;
-            });
             services.AddMvc();
             services.AddProblemDetails();
-            services.AddExceptionHandler<GlobalExceptionHandler>();
-
-            services.AddSwaggerGen(c =>
+            services.AddAuthentication(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ToDoService v1", Version = "v1" });
-                c.SwaggerDoc("v2", new OpenApiInfo { Title = "ToDoService v2", Version = "v2" });
-            });
-
+                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+            options.LoginPath = "/Authentication/Login";
+            options.AccessDeniedPath = "/Authentication/Login";
+             });
         }
 
         public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
-            app.UseExceptionHandler(); //Exceptions
-
-
-
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ToDoService v1");
-                    c.SwaggerEndpoint("/swagger/v2/swagger.json", "ToDoService v2");
-                    c.RoutePrefix = string.Empty;
-                });
+                app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
+            // app.UseExceptionHandler();
 
+            app.UseStaticFiles();
             app.UseRouting();
+            
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-            endpoints.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=ToDo}/{action=List}/{id?}" // ToDoController by default
-                    ); // we will use attribute-based routing
-        });
-
-            
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Authentication}/{action=Login}/{id?}");
+            });
+            ;
         }
-}
+    }
 }

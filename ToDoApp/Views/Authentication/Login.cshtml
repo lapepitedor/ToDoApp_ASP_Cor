@@ -1,0 +1,21 @@
+﻿@using ToDoApp.ViewModel
+@model LoginViewModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "ToDo - Login";
+}
+<form method="post" action="/Authentication/Authenticate">
+    <div class="mb-2">
+        <label asp-for="EMail" class="form-label"></label>
+        <input class="form-control" asp-for="EMail">
+        <span asp-validation-for="EMail" class="text-danger"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="Password" class="form-label"></label>
+        <input class="form-control" asp-for="Password">
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+    <a class="btn btn-primary" href="/Authentication/PasswordForgotten" role="button">Password forgotten</a>
+</form>
